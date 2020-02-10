@@ -1,0 +1,150 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "maze.h"
+
+
+/*
+ * createMaze -- Creates and fills a maze structure from the given file
+ * INPUTS:       fileName - character array containing the name of the maze file
+ * OUTPUTS:      None
+ * RETURN:       A filled maze structure that represents the contents of the input file
+ * SIDE EFFECTS: None
+ */
+maze_t * createMaze(char * fileName)
+{
+    // Your code here. Make sure to replace following line with your own code.
+    maze_t * maze = (maze_t *)malloc(sizeof(maze_t))
+
+    FILE * in_file;
+    in_file = fopen(fileName,"r");
+
+    int m ,n;
+    fscanf(in_file, "%d %d\n", &m, &n);
+
+    maze->width = m;
+    maze->height = n;
+    maze->cells = malloc(sizeof(char *));
+    *maze->cells = malloc(m*n*sizeof(char));
+
+    int i , j;
+
+    for(i=0;i<m;i++){
+        char dummy[2*n];
+        fgets(dummy,2*n,in_file);
+        for(j=0;j<n;j++){
+        *(*maze->cells + i*n+j)= dummy[j];
+        //printf("Item %d in this line is %s\n",j,nonsense[i*n+j]);
+        if(dummy[j] == 'S'){
+          maze->startRow = i;
+          maze->startColumn = j;
+        }
+        else if(dummy[j] == 'E'){
+          maze->endRow = i;
+          maze->endColumn = j;
+        }
+      }
+    }
+
+    fclose(in_file);
+    return maze;
+}
+
+/*
+ * destroyMaze -- Frees all memory associated with the maze structure, including the structure itself
+ * INPUTS:        maze -- pointer to maze structure that contains all necessary information
+ * OUTPUTS:       None
+ * RETURN:        None
+ * SIDE EFFECTS:  All memory that has been allocated for the maze is freed
+ */
+void destroyMaze(maze_t * maze)
+{
+    // Your code here.
+    free(*maze->cells);
+    free(maze->cells);
+    free(maze);
+    return;
+}
+
+/*
+ * printMaze --  Prints out the maze in a human readable format (should look like examples)
+ * INPUTS:       maze -- pointer to maze structure that contains all necessary information
+ *               width -- width of the maze
+ *               height -- height of the maze
+ * OUTPUTS:      None
+ * RETURN:       None
+ * SIDE EFFECTS: Prints the maze to the console
+ */
+void printMaze(maze_t * maze)
+{
+    // Your code here.
+    int m = maze->width;
+    int n = maze->height;
+    int i, j;
+
+    for(i=0;i<m;i++){
+      char ptr[n+1];
+      for(j=0;j<n;j++){
+        ptr[j] = *(*maze->cells + i*n+j);
+      }
+      printf("%s\n",ptr);
+    }
+
+}
+
+/*
+ * solveMazeManhattanDFS -- recursively solves the maze using depth first search,
+ * INPUTS:               maze -- pointer to maze structure with all necessary maze information
+ *                       col -- the column of the cell currently beinging visited within the maze
+ *                       row -- the row of the cell currently being visited within the maze
+ * OUTPUTS:              None
+ * RETURNS:              0 if the maze is unsolvable, 1 if it is solved
+ * SIDE EFFECTS:         Marks maze cells as visited or part of the solution path
+ */
+int solveMazeDFS(maze_t * maze, int col, int row)
+{
+  
+    // Your code here. Make sure to replace following line with your own code.
+  //  printf("\nAt Row,Col= %d,%d\n", row, col );
+    //printMaze(maze);
+    if(col<0 || row <0 || col>=maze->width || row >=maze->height){
+      //printf("Input out of bound\n");
+      return 0;
+    }
+
+    int index = row * maze->width + col;
+    if(*(*maze->cells + index) == WALL || *(*maze->cells + index) == PATH ||
+                                            *(*maze->cells + index) == VISITED){
+      //printf("Input is not empty\n");
+      return 0;
+    }
+
+    if(*(*maze->cells +index) == END ){
+      return 1;
+    }
+
+    if(*(*maze->cells +index) != START){
+    *(*maze->cells +index) = PATH ;
+    }
+
+    if(solveMazeDFS(maze,col -1, row)){//left
+      return 1;
+    }
+
+    if(solveMazeDFS(maze,col + 1, row)){//right
+      return 1;
+    }
+
+    if(solveMazeDFS(maze,col , row +1)){//down
+      return 1;
+    }
+
+    if(solveMazeDFS(maze,col , row -1)){//up
+      return 1;
+    }
+
+
+    if(*(*maze->cells +index) != START){
+    *(*maze->cells +index) = VISITED ;
+    }
+    return 0;
+}
