@@ -1,1 +1,1 @@
-# ComputerSystemsEngineering-ECE220-Fall2019
+This folder contains my code submitted for ECE 220 homeworks or machine problems.
